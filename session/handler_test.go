@@ -83,7 +83,7 @@ func TestSessionWhoAmI(t *testing.T) {
 		t.Run("case=aal2-aal1", func(t *testing.T) {
 			conf.MustSet(config.ViperKeySessionWhoAmIAAL, config.HighestAvailableAAL)
 			body := run(t, "aal2-aal1", http.StatusForbidden)
-			assert.EqualValues(t, ErrAALNotSatisfied.Reason(), gjson.Get(body, "error.reason").String(), body)
+			assert.EqualValues(t, NewErrAALNotSatisfied("").Reason(), gjson.Get(body, "error.reason").String(), body)
 		})
 
 		t.Run("case=aal2-aal1", func(t *testing.T) {

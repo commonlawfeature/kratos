@@ -128,6 +128,12 @@ func (e *HookExecutor) PostLoginHook(w http.ResponseWriter, r *http.Request, a *
 		return nil
 	}
 
+	// If we detect that whoami would require a higher AAL, we redirect!
+	if err, aalErr := e.d.SessionManager().DoesSessionSatisfy(r, s, e.d.Config(r.Context()).SessionWhoAmIAAL()), new(session.ErrAALNotSatisfied); errors.As(err, &aalErr) {
+		http.Redirect(w, r, aalErr.RedirectTo, http.StatusSeeOther)
+		return nil
+	}
+
 	return x.SecureContentNegotiationRedirection(w, r, s.Declassify(), a.RequestURL,
 		e.d.Writer(), e.d.Config(r.Context()), x.SecureRedirectOverrideDefaultReturnTo(e.d.Config(r.Context()).SelfServiceFlowLoginReturnTo(a.Active.String())))
 }

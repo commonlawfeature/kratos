@@ -150,7 +150,7 @@ func (h *Handler) whoami(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	if err := h.r.SessionManager().DoesSessionSatisfy(r.Context(), s, h.r.Config(r.Context()).SessionWhoAmIAAL()); errors.Is(err, ErrAALNotSatisfied) {
+	if err := h.r.SessionManager().DoesSessionSatisfy(r, s, h.r.Config(r.Context()).SessionWhoAmIAAL()); errors.As(err, new(ErrAALNotSatisfied)) {
 		h.r.Audit().WithRequest(r).WithError(err).Info("Session was found but AAL is not satisfied for calling this endpoint.")
 		h.r.Writer().WriteError(w, r, err)
 		return
