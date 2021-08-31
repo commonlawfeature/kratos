@@ -22,6 +22,7 @@ import (
 )
 
 var _ registration.PostHookPostPersistExecutor = new(WebHook)
+var _ registration.PostHookPrePersistExecutor = new(WebHook)
 var _ verification.PostHookExecutor = new(WebHook)
 var _ recovery.PostHookExecutor = new(WebHook)
 
@@ -94,6 +95,16 @@ func (e *WebHook) ExecuteRegistrationPreHook(_ http.ResponseWriter, req *http.Re
 		RequestHeaders: req.Header,
 		RequestMethod:  req.Method,
 		RequestUrl:     req.RequestURI,
+	})
+}
+
+func (e *WebHook) ExecutePostRegistrationPrePersistHook(_ http.ResponseWriter, req *http.Request, flow *registration.Flow, identity *identity.Identity) error {
+	return e.execute(&templateContext{
+		Flow:           flow,
+		RequestHeaders: req.Header,
+		RequestMethod:  req.Method,
+		RequestUrl:     req.RequestURI,
+		Identity:       identity,
 	})
 }
 

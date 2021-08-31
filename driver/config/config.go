@@ -115,6 +115,7 @@ const (
 	ViperKeySelfServiceRegistrationUI                        = "selfservice.flows.registration.ui_url"
 	ViperKeySelfServiceRegistrationRequestLifespan           = "selfservice.flows.registration.lifespan"
 	ViperKeySelfServiceRegistrationAfter                     = "selfservice.flows.registration.after"
+	ViperKeySelfServiceRegistrationAfterPrePersistHooks      = "selfservice.flows.registration.after_pre_persist"
 	ViperKeySelfServiceRegistrationBeforeHooks               = "selfservice.flows.registration.before.hooks"
 	ViperKeySelfServiceLoginUI                               = "selfservice.flows.login.ui_url"
 	ViperKeySelfServiceLoginRequestLifespan                  = "selfservice.flows.login.lifespan"
@@ -642,6 +643,10 @@ func (p *Config) SelfServiceFlowSettingsAfterHooks(strategy string) []SelfServic
 
 func (p *Config) SelfServiceFlowRegistrationAfterHooks(strategy string) []SelfServiceHook {
 	return p.selfServiceHooks(HookStrategyKey(ViperKeySelfServiceRegistrationAfter, strategy))
+}
+
+func (p *Config) SelfServiceFlowRegistrationAfterPrePersistHooks(strategy string) []SelfServiceHook {
+	return p.selfServiceHooks(HookStrategyKey(ViperKeySelfServiceRegistrationAfterPrePersistHooks, strategy))
 }
 
 func (p *Config) SelfServiceStrategy(strategy string) *SelfServiceStrategy {

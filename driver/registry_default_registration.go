@@ -9,9 +9,17 @@ import (
 )
 
 func (m *RegistryDefault) PostRegistrationPrePersistHooks(ctx context.Context, credentialsType identity.CredentialsType) (b []registration.PostHookPrePersistExecutor) {
-	for _, v := range m.getHooks(string(credentialsType), m.Config(ctx).SelfServiceFlowRegistrationAfterHooks(string(credentialsType))) {
+	for _, v := range m.getHooks(string(credentialsType), m.Config(ctx).SelfServiceFlowRegistrationAfterPrePersistHooks(string(credentialsType))) {
 		if hook, ok := v.(registration.PostHookPrePersistExecutor); ok {
 			b = append(b, hook)
+		}
+	}
+
+	if len(b) == 0 {
+		for _, v := range m.getHooks(config.HookGlobal, m.Config(ctx).SelfServiceFlowRegistrationAfterPrePersistHooks(config.HookGlobal)) {
+			if hook, ok := v.(registration.PostHookPrePersistExecutor); ok {
+				b = append(b, hook)
+			}
 		}
 	}
 

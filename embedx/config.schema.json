@@ -1026,6 +1026,9 @@
                 },
                 "after": {
                   "$ref": "#/definitions/selfServiceAfterRegistration"
+                },
+                "after_pre_persist": {
+                  "$ref": "#/definitions/selfServiceAfterRegistration"
                 }
               }
             },
