@@ -33,7 +33,7 @@ func (m *RegistryDefault) PostRegistrationPostPersistHooks(ctx context.Context, 
 		initialHookCount = 1
 	}
 
-	for _, v := range m.getHooks(string(credentialsType), m.Config(ctx).SelfServiceFlowRegistrationAfterHooks(string(credentialsType))) {
+	for _, v := range m.getHooks(string(credentialsType), m.Config(ctx).SelfServiceFlowRegistrationAfterPostPersistHooks(string(credentialsType))) {
 		if hook, ok := v.(registration.PostHookPostPersistExecutor); ok {
 			b = append(b, hook)
 		}
@@ -42,7 +42,7 @@ func (m *RegistryDefault) PostRegistrationPostPersistHooks(ctx context.Context, 
 	if len(b) == initialHookCount {
 		// since we don't want merging hooks defined in a specific strategy and global hooks
 		// global hooks are added only if no strategy specific hooks are defined
-		for _, v := range m.getHooks(config.HookGlobal, m.Config(ctx).SelfServiceFlowRegistrationAfterHooks(config.HookGlobal)) {
+		for _, v := range m.getHooks(config.HookGlobal, m.Config(ctx).SelfServiceFlowRegistrationAfterPostPersistHooks(config.HookGlobal)) {
 			if hook, ok := v.(registration.PostHookPostPersistExecutor); ok {
 				b = append(b, hook)
 			}

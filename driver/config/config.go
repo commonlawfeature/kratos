@@ -202,6 +202,7 @@ type (
 	SelfServiceHook struct {
 		Name   string          `json:"hook"`
 		Config json.RawMessage `json:"config"`
+		Stage  string          `json:"at"`
 	}
 	SelfServiceStrategy struct {
 		Enabled bool            `json:"enabled"`
@@ -633,20 +634,73 @@ func (p *Config) selfServiceHooks(key string) []SelfServiceHook {
 	return hooks
 }
 
+func (p *Config) selfServiceHooksStage(key string, stage string) []SelfServiceHook {
+	var hooks []SelfServiceHook
+	if !p.p.Exists(key) {
+		return []SelfServiceHook{}
+	}
+
+	out, err := p.p.Marshal(kjson.Parser())
+	if err != nil {
+		p.l.WithError(err).Fatalf("Unable to decode values from configuration key: %s", key)
+	}
+
+	config := gjson.GetBytes(out, fmt.Sprintf("%s.#(at==\"%s\")#", key, stage)).Raw
+	if len(config) == 0 {
+		return []SelfServiceHook{}
+	}
+
+	if err := jsonx.NewStrictDecoder(bytes.NewBufferString(config)).Decode(&hooks); err != nil {
+		p.l.WithError(err).Fatalf("Unable to encode value \"%s\" from configuration key: %s", config, key)
+	}
+
+	for k := range hooks {
+		if len(hooks[k].Config) == 0 {
+			hooks[k].Config = json.RawMessage("{}")
+		}
+	}
+
+	return hooks
+}
+
 func (p *Config) SelfServiceFlowLoginAfterHooks(strategy string) []SelfServiceHook {
 	return p.selfServiceHooks(HookStrategyKey(ViperKeySelfServiceLoginAfter, strategy))
 }
 
-func (p *Config) SelfServiceFlowSettingsAfterHooks(strategy string) []SelfServiceHook {
-	return p.selfServiceHooks(HookStrategyKey(ViperKeySelfServiceSettingsAfter, strategy))
+func (p *Config) SelfServiceFlowSettingsAfterPostPersistHooks(strategy string) []SelfServiceHook {
+	var all_after_hooks = p.selfServiceHooks(HookStrategyKey(ViperKeySelfServiceSettingsAfter, strategy))
+	var deprecated_hooks []SelfServiceHook
+
+	for _, h := range all_after_hooks {
+		if h.Stage == "" {
+			h.Stage = "post_persist"
+			deprecated_hooks = append(deprecated_hooks, h)
+		}
+	}
+
+	return append(p.selfServiceHooksStage(HookStrategyKey(ViperKeySelfServiceSettingsAfter, strategy), "post_persist"), deprecated_hooks[:]...)
 }
 
-func (p *Config) SelfServiceFlowRegistrationAfterHooks(strategy string) []SelfServiceHook {
-	return p.selfServiceHooks(HookStrategyKey(ViperKeySelfServiceRegistrationAfter, strategy))
+func (p *Config) SelfServiceFlowSettingsAfterPrePersistHooks(strategy string) []SelfServiceHook {
+	return p.selfServiceHooksStage(HookStrategyKey(ViperKeySelfServiceSettingsAfter, strategy), "pre_persist")
+}
+
+func (p *Config) SelfServiceFlowRegistrationAfterPostPersistHooks(strategy string) []SelfServiceHook {
+	var all_after_hooks = p.selfServiceHooks(HookStrategyKey(ViperKeySelfServiceRegistrationAfter, strategy))
+	var deprecated_hooks []SelfServiceHook
+
+	for _, h := range all_after_hooks {
+		if h.Stage == "" {
+			h.Stage = "post_persist"
+			deprecated_hooks = append(deprecated_hooks, h)
+		}
+	}
+
+	return append(p.selfServiceHooksStage(HookStrategyKey(ViperKeySelfServiceRegistrationAfter, strategy), "post_persist"), deprecated_hooks[:]...)
 }
 
 func (p *Config) SelfServiceFlowRegistrationAfterPrePersistHooks(strategy string) []SelfServiceHook {
-	return p.selfServiceHooks(HookStrategyKey(ViperKeySelfServiceRegistrationAfterPrePersistHooks, strategy))
+	return p.selfServiceHooksStage(HookStrategyKey(ViperKeySelfServiceRegistrationAfter, strategy), "pre_persist")
 }
 
 func (p *Config) SelfServiceStrategy(strategy string) *SelfServiceStrategy {

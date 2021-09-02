@@ -87,7 +87,7 @@ func TestRegistrationExecutor(t *testing.T) {
 
 				t.Run("case=fail if hooks fail", func(t *testing.T) {
 					t.Cleanup(testhelpers.SelfServiceHookConfigReset(t, conf))
-					viperSetPost(t, conf, strategy, []config.SelfServiceHook{{Name: "err", Config: []byte(`{"ExecutePostRegistrationPrePersistHook": "abort"}`)}})
+					viperSetPost(t, conf, strategy, []config.SelfServiceHook{{Name: "err", Stage: "pre_persist", Config: []byte(`{"ExecutePostRegistrationPrePersistHook": "abort"}`)}})
 					i := testhelpers.SelfServiceHookFakeIdentity(t)
 
 					res, body := makeRequestPost(t, newServer(t, i, flow.TypeBrowser), false, url.Values{})

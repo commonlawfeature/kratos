@@ -183,7 +183,7 @@ func TestDriverDefault_Hooks(t *testing.T) {
 				prep: func(conf *config.Config) {
 					conf.MustSet(config.ViperKeySelfServiceVerificationEnabled, true)
 					conf.MustSet(config.ViperKeySelfServiceRegistrationAfter+".password.hooks", []map[string]interface{}{
-						{"hook": "web_hook", "config": map[string]interface{}{"url": "foo", "method": "POST", "body": "bar"}},
+						{"hook": "web_hook", "at": "post_persist", "config": map[string]interface{}{"url": "foo", "method": "POST", "body": "bar"}},
 						{"hook": "session"},
 					})
 				},
@@ -199,8 +199,8 @@ func TestDriverDefault_Hooks(t *testing.T) {
 				uc: "Two web_hooks are configured on a global level",
 				prep: func(conf *config.Config) {
 					conf.MustSet(config.ViperKeySelfServiceRegistrationAfter+".hooks", []map[string]interface{}{
-						{"hook": "web_hook", "config": map[string]interface{}{"url": "foo", "method": "POST"}},
-						{"hook": "web_hook", "config": map[string]interface{}{"url": "bar", "method": "GET"}},
+						{"hook": "web_hook", "at": "post_persist", "config": map[string]interface{}{"url": "foo", "method": "POST"}},
+						{"hook": "web_hook", "at": "post_persist", "config": map[string]interface{}{"url": "bar", "method": "GET"}},
 					})
 				},
 				expect: func(reg *driver.RegistryDefault) []registration.PostHookPostPersistExecutor {
@@ -214,11 +214,11 @@ func TestDriverDefault_Hooks(t *testing.T) {
 				uc: "Hooks are configured on a global level, as well as on a strategy level",
 				prep: func(conf *config.Config) {
 					conf.MustSet(config.ViperKeySelfServiceRegistrationAfter+".password.hooks", []map[string]interface{}{
-						{"hook": "web_hook", "config": map[string]interface{}{"url": "foo", "method": "GET"}},
+						{"hook": "web_hook", "at": "post_persist", "config": map[string]interface{}{"url": "foo", "method": "GET"}},
 						{"hook": "session"},
 					})
 					conf.MustSet(config.ViperKeySelfServiceRegistrationAfter+".hooks", []map[string]interface{}{
-						{"hook": "web_hook", "config": map[string]interface{}{"url": "bar", "method": "POST"}},
+						{"hook": "web_hook", "at": "post_persist", "config": map[string]interface{}{"url": "bar", "method": "POST"}},
 					})
 					conf.MustSet(config.ViperKeySelfServiceVerificationEnabled, true)
 				},
@@ -242,7 +242,7 @@ func TestDriverDefault_Hooks(t *testing.T) {
 				assert.Equal(t, expectedExecutors, h)
 			})
 		}
-	// AFTER PRE_PERSIST hooks
+		// AFTER PRE_PERSIST hooks
 		for _, tc := range []struct {
 			uc     string
 			prep   func(conf *config.Config)
@@ -256,9 +256,9 @@ func TestDriverDefault_Hooks(t *testing.T) {
 			{
 				uc: "Two web_hooks are configured on a global level",
 				prep: func(conf *config.Config) {
-					conf.MustSet(config.ViperKeySelfServiceRegistrationAfterPrePersistHooks+".hooks", []map[string]interface{}{
-						{"hook": "web_hook", "config": map[string]interface{}{"url": "foo", "method": "POST"}},
-						{"hook": "web_hook", "config": map[string]interface{}{"url": "bar", "method": "GET"}},
+					conf.MustSet(config.ViperKeySelfServiceRegistrationAfter+".hooks", []map[string]interface{}{
+						{"hook": "web_hook", "at": "pre_persist", "config": map[string]interface{}{"url": "foo", "method": "POST"}},
+						{"hook": "web_hook", "at": "pre_persist", "config": map[string]interface{}{"url": "bar", "method": "GET"}},
 					})
 				},
 				expect: func(reg *driver.RegistryDefault) []registration.PostHookPrePersistExecutor {
@@ -271,11 +271,11 @@ func TestDriverDefault_Hooks(t *testing.T) {
 			{
 				uc: "Hooks are configured on a global level, as well as on a strategy level",
 				prep: func(conf *config.Config) {
-					conf.MustSet(config.ViperKeySelfServiceRegistrationAfterPrePersistHooks+".password.hooks", []map[string]interface{}{
-						{"hook": "web_hook", "config": map[string]interface{}{"url": "foo", "method": "GET"}},
+					conf.MustSet(config.ViperKeySelfServiceRegistrationAfter+".password.hooks", []map[string]interface{}{
+						{"hook": "web_hook", "at": "pre_persist", "config": map[string]interface{}{"url": "foo", "method": "GET"}},
 					})
-					conf.MustSet(config.ViperKeySelfServiceRegistrationAfterPrePersistHooks+".hooks", []map[string]interface{}{
-						{"hook": "web_hook", "config": map[string]interface{}{"url": "bar", "method": "POST"}},
+					conf.MustSet(config.ViperKeySelfServiceRegistrationAfter+".hooks", []map[string]interface{}{
+						{"hook": "web_hook", "at": "pre_persist", "config": map[string]interface{}{"url": "bar", "method": "POST"}},
 					})
 					conf.MustSet(config.ViperKeySelfServiceVerificationEnabled, true)
 				},

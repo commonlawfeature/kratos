@@ -233,8 +233,37 @@ func TestViperProvider(t *testing.T) {
 				{
 					strategy: "password",
 					hooks: []config.SelfServiceHook{
-						{Name: "session", Config: json.RawMessage(`{}`)},
-						{Name: "web_hook", Config: json.RawMessage(`{"body":"/path/to/template.jsonnet","method":"POST","url":"https://test.kratos.ory.sh/after_registration_password_hook"}`)},
+						{Name: "web_hook", Stage: "pre_persist", Config: json.RawMessage(`{"body":"/path/to/template.jsonnet","method":"POST","url":"https://test.kratos.ory.sh/after_registration_password_hook"}`)},
+						// {Name: "verify", Config: json.RawMessage(`{}`)},
+						// {Name: "redirect", Config: json.RawMessage(`{"allow_user_defined_redirect":false,"default_redirect_url":"http://test.kratos.ory.sh:4000/"}`)},
+					},
+				},
+				{
+					strategy: "oidc",
+					hooks:    []config.SelfServiceHook{
+						// {Name: "verify", Config: json.RawMessage(`{}`)},
+						// {Name: "redirect", Config: json.RawMessage(`{"allow_user_defined_redirect":false,"default_redirect_url":"http://test.kratos.ory.sh:4000/"}`)},
+					},
+				},
+				{
+					strategy: config.HookGlobal,
+					hooks:    []config.SelfServiceHook{},
+				},
+			} {
+				t.Run("hook=after/stage=pre_persist/strategy="+tc.strategy, func(t *testing.T) {
+					hooks := p.SelfServiceFlowRegistrationAfterPrePersistHooks(tc.strategy)
+					assert.Equal(t, tc.hooks, hooks)
+				})
+			}
+
+			for _, tc := range []struct {
+				strategy string
+				hooks    []config.SelfServiceHook
+			}{
+				{
+					strategy: "password",
+					hooks: []config.SelfServiceHook{
+						{Name: "session", Stage: "post_persist", Config: json.RawMessage(`{}`)},
 						// {Name: "verify", Config: json.RawMessage(`{}`)},
 						// {Name: "redirect", Config: json.RawMessage(`{"allow_user_defined_redirect":false,"default_redirect_url":"http://test.kratos.ory.sh:4000/"}`)},
 					},
@@ -243,20 +272,20 @@ func TestViperProvider(t *testing.T) {
 					strategy: "oidc",
 					hooks: []config.SelfServiceHook{
 						// {Name: "verify", Config: json.RawMessage(`{}`)},
-						{Name: "web_hook", Config: json.RawMessage(`{"body":"/path/to/template.jsonnet","method":"GET","url":"https://test.kratos.ory.sh/after_registration_oidc_hook"}`)},
-						{Name: "session", Config: json.RawMessage(`{}`)},
+						{Name: "web_hook", Stage: "post_persist", Config: json.RawMessage(`{"body":"/path/to/template.jsonnet","method":"GET","url":"https://test.kratos.ory.sh/after_registration_oidc_hook"}`)},
+						{Name: "session", Stage: "post_persist", Config: json.RawMessage(`{}`)},
 						// {Name: "redirect", Config: json.RawMessage(`{"allow_user_defined_redirect":false,"default_redirect_url":"http://test.kratos.ory.sh:4000/"}`)},
 					},
 				},
 				{
 					strategy: config.HookGlobal,
 					hooks: []config.SelfServiceHook{
-						{Name: "web_hook", Config: json.RawMessage(`{"auth":{"config":{"in":"header","name":"My-Key","value":"My-Key-Value"},"type":"api_key"},"body":"/path/to/template.jsonnet","method":"POST","url":"https://test.kratos.ory.sh/after_registration_global_hook"}`)},
+						{Name: "web_hook", Stage: "post_persist", Config: json.RawMessage(`{"auth":{"config":{"in":"header","name":"My-Key","value":"My-Key-Value"},"type":"api_key"},"body":"/path/to/template.jsonnet","method":"POST","url":"https://test.kratos.ory.sh/after_registration_global_hook"}`)},
 					},
 				},
 			} {
-				t.Run("hook=after/strategy="+tc.strategy, func(t *testing.T) {
-					hooks := p.SelfServiceFlowRegistrationAfterHooks(tc.strategy)
+				t.Run("hook=after/stage=post_persist/strategy="+tc.strategy, func(t *testing.T) {
+					hooks := p.SelfServiceFlowRegistrationAfterPostPersistHooks(tc.strategy)
 					assert.Equal(t, tc.hooks, hooks)
 				})
 			}
@@ -325,25 +354,48 @@ func TestViperProvider(t *testing.T) {
 			}{
 				{
 					strategy: "password",
-					hooks: []config.SelfServiceHook{
-						{Name: "web_hook", Config: json.RawMessage(`{"body":"/path/to/template.jsonnet","method":"POST","url":"https://test.kratos.ory.sh/after_settings_password_hook"}`)},
-					},
+					hooks:    []config.SelfServiceHook{},
 				},
 				{
 					strategy: "profile",
 					hooks: []config.SelfServiceHook{
-						{Name: "web_hook", Config: json.RawMessage(`{"body":"/path/to/template.jsonnet","method":"POST","url":"https://test.kratos.ory.sh/after_settings_profile_hook"}`)},
+						{Name: "web_hook", Stage: "pre_persist", Config: json.RawMessage(`{"body":"/path/to/template.jsonnet","method":"POST","url":"https://test.kratos.ory.sh/after_settings_profile_hook"}`)},
 					},
 				},
 				{
 					strategy: config.HookGlobal,
+					hooks:    []config.SelfServiceHook{},
+				},
+			} {
+				t.Run("hook=after/stage=pre_persist/strategy="+tc.strategy, func(t *testing.T) {
+					hooks := p.SelfServiceFlowSettingsAfterPrePersistHooks(tc.strategy)
+					assert.Equal(t, tc.hooks, hooks)
+				})
+			}
+
+			for _, tc := range []struct {
+				strategy string
+				hooks    []config.SelfServiceHook
+			}{
+				{
+					strategy: "password",
 					hooks: []config.SelfServiceHook{
-						{Name: "web_hook", Config: json.RawMessage(`{"body":"/path/to/template.jsonnet","method":"POST","url":"https://test.kratos.ory.sh/after_settings_global_hook"}`)},
+						{Name: "web_hook", Stage: "post_persist", Config: json.RawMessage(`{"body":"/path/to/template.jsonnet","method":"POST","url":"https://test.kratos.ory.sh/after_settings_password_hook"}`)},
+					},
+				},
+				{
+					strategy: "profile",
+					hooks:    []config.SelfServiceHook{},
+				},
+				{
+					strategy: config.HookGlobal,
+					hooks: []config.SelfServiceHook{
+						{Name: "web_hook", Stage: "post_persist", Config: json.RawMessage(`{"body":"/path/to/template.jsonnet","method":"POST","url":"https://test.kratos.ory.sh/after_settings_global_hook"}`)},
 					},
 				},
 			} {
-				t.Run("hook=after/strategy="+tc.strategy, func(t *testing.T) {
-					hooks := p.SelfServiceFlowSettingsAfterHooks(tc.strategy)
+				t.Run("hook=after/stage=post_persist/strategy="+tc.strategy, func(t *testing.T) {
+					hooks := p.SelfServiceFlowSettingsAfterPostPersistHooks(tc.strategy)
 					assert.Equal(t, tc.hooks, hooks)
 				})
 			}

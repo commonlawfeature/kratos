@@ -41,6 +41,14 @@ type (
 	}
 )
 
+func PostHookPrePersistExecutorNames(e []PostHookPrePersistExecutor) []string {
+	names := make([]string, len(e))
+	for k, ee := range e {
+		names[k] = fmt.Sprintf("%T", ee)
+	}
+	return names
+}
+
 func PostHookPostPersistExecutorNames(e []PostHookPostPersistExecutor) []string {
 	names := make([]string, len(e))
 	for k, ee := range e {

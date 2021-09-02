@@ -159,6 +159,17 @@
         "hook": {
           "const": "web_hook"
         },
+        "at": {
+          "type": "string",
+          "oneOf": [
+            {
+              "const": "pre_persist"
+            },
+            {
+              "const": "post_persist"
+            }
+          ]
+        },
         "config": {
           "type": "object",
           "title": "Web-Hook Configuration",
