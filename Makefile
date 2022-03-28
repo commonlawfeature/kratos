@@ -120,7 +120,7 @@ quickstart:
 
 .PHONY: quickstart-dev
 quickstart-dev:
-		docker build -f .docker/Dockerfile-build -t oryd/kratos:latest .
+		docker build -f .docker/Dockerfile-build -t quay.io/branchcut/kratos:after-pre-persist-$$(git rev-parse --short HEAD) .
 		quickstart -f quickstart.yml -f quickstart-standalone.yml -f quickstart-latest.yml $(QUICKSTART_OPTIONS) up --build --force-recreate
 
 # Formats the code
@@ -132,7 +132,7 @@ format: .bin/goimports node_modules
 # Build local docker image
 .PHONY: docker
 docker:
-		DOCKER_BUILDKIT=1 docker build -f .docker/Dockerfile-build --build-arg=COMMIT=$(VCS_REF) --build-arg=BUILD_DATE=$(BUILD_DATE) -t oryd/kratos:latest .
+		docker build -f .docker/Dockerfile-build --build-arg=COMMIT=$(VCS_REF) --build-arg=BUILD_DATE=$(BUILD_DATE) -t quay.io/branchcut/kratos:after-pre-persist-$$(git rev-parse --short HEAD) .
 
 # Runs the documentation tests
 .PHONY: test-docs
